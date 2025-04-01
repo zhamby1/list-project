@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from "react";
-import { Text, View, FlatList, ActivityIndicator } from "react-native";
+import { Text, View, FlatList, Button, TextInput } from "react-native";
 import styles from "./styles";
 
 
@@ -9,71 +9,51 @@ import styles from "./styles";
 
 export default function App() {
 
-  //grab users from the randomuser.me API
-  //first we will create three stateful variables
-  //users: to store the users.  default state is an empty array beacause we will take in multiple people
+//create a state variable to hold the data using useState for our data
+  const [data, setData] = useState([
+    { id: "1", name: "Apple"},
+    { id: "2", name: "Bananas"},
+    { id: "3", name: "Orange"},
+    { id: "4", name: "Grape"},
+  ])
 
-  const [users, setUsers] = useState([]);
-  //if loading activity indicator runs..set default state to true
-  const [loading, setLoading] = useState(true);
-  //error handling becomes a little easier with useState, can we can check to see if an error occurs and change it from true to false
-  const [error, setError] = useState(null);
+  //create a searchbox that allows us to filter data
+  //we create a search text state because it can change depending on what the user types in
+  //our data can also change, we will use a filteredData state to hold the data that we want to display and change
+  //initial state of our data is our data array above
 
-  //we need to fetch the users as soon as the page renders so we can load them.  So we need to run a function that will run as the page runs
-  //USEFFECT!!!!
-  useEffect(() =>{
-    const fetchUsers = async () =>{
-      try{
-        const response = await fetch("https://randomuser.me/api/?results=20")
+  const [searchText, setSearchText] = useState("")
+  const [filteredData, setFilteredData] = useState(data)
 
-        if(!response.ok){
-          throw new Error("Something went wrong!")
-        }
-
-        const data = await response.json()
-        setUsers(data.results)
-        setLoading(false)
-    
-    }
-    catch(err){
-      setError(err)
-      setLoading(false)
-    }
-  }
-
-   fetchUsers()
-  }, [])
-
-
-  if (loading){
-    return(
-      <ActivityIndicator size={"large"} color={"dodgerblue"} />
-    )
+  //create a function that will filter the data...we will take in some text from our search bar and filter out search results by the text
+  const handleSearch = (text) => {
+    setSearchText(text)
+    const filtered = data.filter(item => item.name.toLowerCase().includes(text.toLowerCase()))
+    setFilteredData(filtered)
 
   }
 
-  if(error){
-    return(
-      <View style={styles.container}>
-        <Text>{error.message}</Text>
-      </View>
-    )
-  }
 
-  return(
+ 
+
+  return (
     <View style={styles.container}>
 
-      <FlatList
-      data={users}
-      keyExtractor={(item) => item.email}
-      renderItem={({item}) => (
-        <Text style={styles.item}>
-          {item.name.first} {item.name.last}
-        </Text>
-      )}
+      <TextInput
+        placeholder="Search..."
+        value={searchText}
+        onChangeText={handleSearch}
       />
 
-    </View>
-  )
+      <FlatList
+        data={filteredData}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <Text style={styles.item}>{item.name}</Text>
+        )}
+        />
+     
 
+    </View>
+  );
 }
